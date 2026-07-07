@@ -1,0 +1,221 @@
+:root {
+  --rot: #d31920;
+  --rot-dunkel: #a8121a;
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --text: #1c1e21;
+  --muted: #6b7280;
+  --border: #e3e5e8;
+  --gruen: #1a9c4b;
+  --gelb: #e8a317;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  max-width: 560px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header.topbar {
+  background: var(--rot);
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+header.topbar h1 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 700;
+}
+
+header.topbar .sub {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+main {
+  flex: 1;
+  padding: 16px;
+  padding-bottom: 90px;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border);
+}
+
+.card h2 {
+  font-size: 15px;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+
+.card h2 .step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--rot);
+  color: #fff;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 10px 0 6px;
+}
+
+input[type="text"], input[type="number"], input[type="time"], select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  color: var(--text);
+}
+
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--rot); outline-offset: 1px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 20px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: transform 0.05s ease;
+}
+
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--rot); color: #fff; }
+.btn-secondary { background: #eceef1; color: var(--text); }
+.btn-success { background: var(--gruen); color: #fff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.row { display: flex; gap: 10px; }
+.row > * { flex: 1; }
+
+.format-choice {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.format-choice.selected { border-color: var(--rot); background: #fdf1f1; }
+.format-choice h3 { margin: 0 0 4px; font-size: 14px; }
+.format-choice p { margin: 0; font-size: 12.5px; color: var(--muted); }
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: #eceef1;
+  color: var(--muted);
+}
+.badge.ok { background: #e5f6ea; color: var(--gruen); }
+.badge.warn { background: #fdf1dc; color: var(--gelb); }
+.badge.live { background: #fdeaea; color: var(--rot); }
+
+.hint { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.error { font-size: 13px; color: var(--rot); margin-top: 6px; }
+
+table.tabelle { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.tabelle th, table.tabelle td { padding: 8px 6px; text-align: center; border-bottom: 1px solid var(--border); }
+table.tabelle th:first-child, table.tabelle td:first-child { text-align: left; }
+table.tabelle td.name { font-weight: 600; }
+table.tabelle tr:first-child td { font-weight: 700; }
+
+.match-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+  background: #fff;
+}
+.match-card .teams { display: flex; flex-direction: column; gap: 2px; font-size: 14px; font-weight: 600; }
+.match-card .meta { font-size: 11.5px; color: var(--muted); }
+.match-card .score-inputs { display: flex; align-items: center; gap: 6px; }
+.match-card input.score {
+  width: 42px; text-align: center; padding: 8px 4px; font-size: 16px; font-weight: 700;
+}
+.match-card .court-tag {
+  font-size: 11px; font-weight: 700; color: #fff; background: var(--rot);
+  padding: 2px 8px; border-radius: 8px; margin-right: 8px;
+}
+
+.group-title { font-weight: 700; font-size: 13.5px; margin: 16px 0 8px; color: var(--rot-dunkel); }
+.group-title:first-child { margin-top: 0; }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; }
+.tabs button {
+  flex-shrink: 0; padding: 9px 16px; border-radius: 20px; border: 1px solid var(--border);
+  background: #fff; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer;
+}
+.tabs button.active { background: var(--rot); color: #fff; border-color: var(--rot); }
+
+.share-box {
+  display: flex; gap: 8px; align-items: center; background: #f4f5f7; border-radius: 10px; padding: 10px 12px;
+}
+.share-box input { border: none; background: transparent; font-size: 13px; color: var(--muted); flex: 1; }
+
+.bracket-round { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.bracket-round h4 { font-size: 12.5px; color: var(--muted); margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+.empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+footer.tabbar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 560px; background: #fff; border-top: 1px solid var(--border);
+  display: flex; padding: 8px 6px calc(env(safe-area-inset-bottom) + 8px);
+  z-index: 20;
+}
+footer.tabbar a {
+  flex: 1; text-align: center; padding: 8px 4px; font-size: 11px; color: var(--muted); text-decoration: none;
+}
+footer.tabbar a.active { color: var(--rot); font-weight: 700; }
+footer.tabbar a .ic { display: block; font-size: 18px; margin-bottom: 2px; }
+
+@media (min-width: 600px) {
+  .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+}

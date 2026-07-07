@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#d31920" />
+<title>Live-Tabelle | Camp-Turnier</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div>
+      <h1 id="turnierTitel">Live-Turnier</h1>
+      <div class="sub">🔴 Live · wird automatisch aktualisiert</div>
+    </div>
+  </header>
+
+  <main>
+    <div id="content">
+      <div class="empty-state"><div class="icon">⏳</div>Lade Turnier…</div>
+    </div>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="js/firebase-sync.js"></script>
+<script src="js/tournament-engine.js"></script>
+<script src="js/live.js"></script>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");</script>
+</body>
+</html>

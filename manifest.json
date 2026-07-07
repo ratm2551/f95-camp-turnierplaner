@@ -1,0 +1,11 @@
+{
+  "name": "Camp-Turnier | Fortuna Düsseldorf",
+  "short_name": "Camp-Turnier",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f4f5f7",
+  "theme_color": "#d31920",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
