@@ -72,12 +72,21 @@
 
   // Verteilt Runden (Array von Runden, jede Runde ein Array von Paarungen) auf
   // Plätze/Zeitfenster. Jede Runde wird in "Wellen" von max. `courts` Spielen zerlegt.
-  function scheduleRounds(rounds, courts, matchDuration, breakDuration, startDateTime) {
+  // `pause` (optional): { afterMinutes, durationMinutes } - eine einmalige Unterbrechung
+  // (z.B. Mittagspause), die alle danach folgenden Spiele nach hinten verschiebt.
+  function scheduleRounds(rounds, courts, matchDuration, breakDuration, startDateTime, pause) {
     const slotLen = slotMinutes(matchDuration, breakDuration);
     let currentStart = new Date(startDateTime);
+    let elapsed = 0;
+    let pauseInserted = !pause || !pause.durationMinutes;
     const scheduled = [];
     rounds.forEach((roundMatches, roundIdx) => {
       for (let i = 0; i < roundMatches.length; i += courts) {
+        if (!pauseInserted && elapsed >= pause.afterMinutes) {
+          currentStart = new Date(currentStart.getTime() + pause.durationMinutes * 60000);
+          elapsed += pause.durationMinutes;
+          pauseInserted = true;
+        }
         const wave = roundMatches.slice(i, i + courts);
         wave.forEach((pair, courtIdx) => {
           const start = new Date(currentStart);
@@ -97,8 +106,12 @@
           });
         });
         currentStart = new Date(currentStart.getTime() + slotLen * 60000);
+        elapsed += slotLen;
       }
     });
+    if (!pauseInserted) {
+      currentStart = new Date(currentStart.getTime() + pause.durationMinutes * 60000);
+    }
     return { matches: scheduled, endTime: currentStart.toISOString() };
   }
 
@@ -111,13 +124,15 @@
   }
 
   // Prüft, ob der Spielplan ins Zeitfenster passt und schlägt bei Bedarf
-  // eine Platzanzahl vor, mit der es passen würde.
-  function checkCapacity(rounds, courts, matchDuration, breakDuration, availableMinutes) {
+  // eine Platzanzahl vor, mit der es passen würde. `pause` (optional) wird als
+  // fixe zusätzliche Zeit eingerechnet.
+  function checkCapacity(rounds, courts, matchDuration, breakDuration, availableMinutes, pause) {
     const slotLen = slotMinutes(matchDuration, breakDuration);
     const waves = countWaves(rounds, courts);
-    const neededMinutes = waves * slotLen;
+    const pauseMinutes = pause?.durationMinutes || 0;
+    const neededMinutes = waves * slotLen + pauseMinutes;
     const totalMatches = countMatches(rounds);
-    const maxWavesFit = Math.max(1, Math.floor(availableMinutes / slotLen));
+    const maxWavesFit = Math.max(1, Math.floor(Math.max(0, availableMinutes - pauseMinutes) / slotLen));
     let suggestedCourts = courts;
     if (neededMinutes > availableMinutes) {
       // größte Runde bestimmt die Mindest-Plätze, danach hochzählen bis Wellen passen

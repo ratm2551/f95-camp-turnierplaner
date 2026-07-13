@@ -77,9 +77,23 @@ el("teamSize").addEventListener("input", () => {
   recomputeCapacity();
 });
 
+el("useFootballerNames").addEventListener("change", () => {
+  if (state.inputMode === "csv") {
+    rebuildAutoTeams();
+    renderParticipantsSummary();
+  } else {
+    updateParticipantsFromCount();
+  }
+  recomputeCapacity();
+});
+
+function nameStyle() {
+  return el("useFootballerNames").checked ? "players" : "numeric";
+}
+
 function rebuildAutoTeams() {
   const size = parseInt(el("teamSize").value, 10) || 6;
-  state.teams = CsvParser.autoBuildTeams(state.participants, size);
+  state.teams = CsvParser.autoBuildTeams(state.participants, size, nameStyle());
 }
 
 // ---------- Schritt 1b: Nur Anzahl (mit/ohne Altersgruppen) ----------
@@ -129,7 +143,7 @@ function updateParticipantsFromCount() {
   } else {
     entries = [{ label: "", count: parseInt(el("totalPlayers").value, 10) || 0 }];
   }
-  state.teams = CsvParser.buildTeamsFromCounts(entries, teamSize);
+  state.teams = CsvParser.buildTeamsFromCounts(entries, teamSize, nameStyle());
   state.participants = state.teams.flatMap((t) => t.players.map((p) => ({ name: p, team: t.name })));
 
   renderParticipantsSummary();
@@ -193,9 +207,23 @@ function renderFormatOptions() {
 
 // ---------- Schritt 3: Zeit & Plätze ----------
 
-["startTime", "availableMinutes", "matchDuration", "breakDuration", "courts"].forEach((id) => {
+["startTime", "availableMinutes", "matchDuration", "breakDuration", "courts", "pauseAfter", "pauseDuration"].forEach((id) => {
   el(id).addEventListener("input", recomputeCapacity);
 });
+
+el("usePause").addEventListener("change", () => {
+  el("pauseBlock").style.display = el("usePause").checked ? "block" : "none";
+  recomputeCapacity();
+});
+
+function getPauseConfig() {
+  if (!el("usePause").checked) return null;
+  const durationMinutes = Math.max(1, parseInt(el("pauseDuration").value, 10) || 0);
+  return {
+    afterMinutes: Math.max(0, parseInt(el("pauseAfter").value, 10) || 0),
+    durationMinutes,
+  };
+}
 
 function buildGroupRoundsForPreview() {
   const teamIds = state.teams.map((t) => t.id);
@@ -221,14 +249,16 @@ function recomputeCapacity() {
   const breakDuration = Math.max(0, parseInt(el("breakDuration").value, 10) || 0);
   const availableMinutes = Math.max(1, parseInt(el("availableMinutes").value, 10) || 60);
 
+  const pause = getPauseConfig();
   const rounds = buildGroupRoundsForPreview();
-  const cap = TournamentEngine.checkCapacity(rounds, courts, matchDuration, breakDuration, availableMinutes);
+  const cap = TournamentEngine.checkCapacity(rounds, courts, matchDuration, breakDuration, availableMinutes, pause);
 
+  const pauseNote = pause ? ` (inkl. ${pause.durationMinutes} Min. Pause)` : "";
   const hintBox = el("capacityHint");
   if (cap.fits) {
-    hintBox.innerHTML = `<p class="hint"><span class="badge ok">passt</span> ${cap.totalMatches} Gruppenspiele brauchen ca. ${cap.neededMinutes} Min. (K.O.-Runde kommt danach dazu, je nach Ergebnis).</p>`;
+    hintBox.innerHTML = `<p class="hint"><span class="badge ok">passt</span> ${cap.totalMatches} Gruppenspiele brauchen ca. ${cap.neededMinutes} Min.${pauseNote} (K.O.-Runde kommt danach dazu, je nach Ergebnis).</p>`;
   } else {
-    hintBox.innerHTML = `<p class="hint"><span class="badge warn">knapp</span> ${cap.totalMatches} Spiele brauchen ca. ${cap.neededMinutes} Min., aber nur ${cap.availableMinutes} Min. verfügbar. Vorschlag: ${cap.suggestedCourts} Plätze statt ${courts}.</p>`;
+    hintBox.innerHTML = `<p class="hint"><span class="badge warn">knapp</span> ${cap.totalMatches} Spiele brauchen ca. ${cap.neededMinutes} Min.${pauseNote}, aber nur ${cap.availableMinutes} Min. verfügbar. Vorschlag: ${cap.suggestedCourts} Plätze statt ${courts}.</p>`;
   }
   el("card-create").style.display = "block";
   el("createSummary").textContent =
@@ -288,7 +318,8 @@ async function createTournament() {
     rounds = TournamentEngine.combineGroupRounds(groupList);
   }
 
-  const { matches, endTime } = TournamentEngine.scheduleRounds(rounds, courts, matchDuration, breakDuration, startDateTime);
+  const pause = getPauseConfig();
+  const { matches, endTime } = TournamentEngine.scheduleRounds(rounds, courts, matchDuration, breakDuration, startDateTime, pause);
   const matchesObj = {};
   matches.forEach((m, i) => (matchesObj["m" + i] = m));
 
@@ -308,6 +339,7 @@ async function createTournament() {
       courts,
       matchDuration,
       breakDuration,
+      pause: pause || null,
       startTime: startDateTime.toISOString(),
       groupPhaseEndTime: endTime,
       phase: "gruppenphase",
@@ -360,3 +392,58 @@ el("btnJoin").addEventListener("click", async () => {
 // letzten Code vorausfüllen, falls vorhanden
 const lastCode = localStorage.getItem("lastCode");
 if (lastCode) el("joinCode").value = lastCode;
+
+// ---------- Zurück-Navigation & Reset ----------
+
+const STEP_ORDER = ["card-teilnehmer", "card-format", "card-time", "card-create"];
+
+function goToStep(stepId) {
+  const idx = STEP_ORDER.indexOf(stepId);
+  STEP_ORDER.forEach((id, i) => {
+    if (i > idx) el(id).style.display = "none";
+  });
+  el(stepId).scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+el("btnBackStep1").addEventListener("click", () => goToStep("card-teilnehmer"));
+el("btnBackStep2").addEventListener("click", () => goToStep("card-format"));
+el("btnBackStep3").addEventListener("click", () => goToStep("card-time"));
+
+el("btnResetWizard").addEventListener("click", () => {
+  state.inputMode = "csv";
+  state.participants = [];
+  state.hasTeamColumn = false;
+  state.teams = [];
+  state.format = null;
+
+  el("turnierName").value = "";
+  el("csvFile").value = "";
+  el("csvError").style.display = "none";
+  el("participantsSummary").innerHTML = "";
+
+  el("useAgeGroups").checked = false;
+  el("totalCountBlock").style.display = "block";
+  el("ageGroupBlock").style.display = "none";
+  el("ageGroupRows").innerHTML = "";
+  el("totalPlayers").value = 16;
+  el("teamSize").value = 6;
+  el("useFootballerNames").checked = false;
+
+  setInputMode("csv");
+  el("teamSizeBlock").style.display = "none";
+
+  document.querySelectorAll(".format-choice").forEach((x) => x.classList.remove("selected"));
+  el("formatOptions").innerHTML = "";
+
+  el("usePause").checked = false;
+  el("pauseBlock").style.display = "none";
+  el("pauseAfter").value = 60;
+  el("pauseDuration").value = 15;
+
+  el("btnCreate").disabled = false;
+  el("btnCreate").textContent = "Turnier erstellen & Spielplan generieren";
+  el("createError").style.display = "none";
+
+  ["card-format", "card-time", "card-create", "card-done"].forEach((id) => (el(id).style.display = "none"));
+  el("card-teilnehmer").scrollIntoView({ behavior: "smooth", block: "start" });
+});

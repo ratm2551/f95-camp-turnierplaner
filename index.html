@@ -12,10 +12,11 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <div>
+    <div style="flex:1">
       <h1>🏆 Camp-Turnier</h1>
       <div class="sub">Turnierplaner für Fortuna-Camps</div>
     </div>
+    <button type="button" class="btn btn-secondary" id="btnResetWizard" style="width:auto;padding:8px 12px;font-size:13px">↺ Neu</button>
   </header>
 
   <main>
@@ -31,7 +32,7 @@
       <div class="error" id="joinError" style="display:none"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="card-teilnehmer">
       <h2><span class="step">1</span>Teilnehmer</h2>
       <label for="turnierName">Name des Turniers</label>
       <input type="text" id="turnierName" placeholder="z.B. Camp Platz 3 - Freitag" />
@@ -70,10 +71,15 @@
       <div id="teamSizeBlock" style="display:none">
         <label for="teamSize">Wie viele Spieler pro Team?</label>
         <input type="number" id="teamSize" min="2" max="11" value="6" />
+        <label style="display:flex;align-items:center;gap:8px;margin-top:10px">
+          <input type="checkbox" id="useFootballerNames" style="width:auto" />
+          <span style="margin:0">🏆 Teams nach berühmten Fußballern benennen (statt "Team 1, 2, …")</span>
+        </label>
       </div>
     </div>
 
     <div class="card" id="card-format" style="display:none">
+      <button type="button" class="btn btn-secondary" id="btnBackStep1" style="width:auto;padding:6px 12px;font-size:12.5px;margin-bottom:12px">← Zurück zu Teilnehmern</button>
       <h2><span class="step">2</span>Turnierform</h2>
 
       <div class="format-choice" data-format="liga">
@@ -93,6 +99,7 @@
     </div>
 
     <div class="card" id="card-time" style="display:none">
+      <button type="button" class="btn btn-secondary" id="btnBackStep2" style="width:auto;padding:6px 12px;font-size:12.5px;margin-bottom:12px">← Zurück zur Turnierform</button>
       <h2><span class="step">3</span>Zeit &amp; Plätze</h2>
       <div class="row">
         <div>
@@ -110,16 +117,35 @@
           <input type="number" id="matchDuration" value="8" min="2" />
         </div>
         <div>
-          <label for="breakDuration">Pause danach (Min.)</label>
+          <label for="breakDuration">Pause zwischen Spielen (Min.)</label>
           <input type="number" id="breakDuration" value="2" min="0" />
         </div>
       </div>
       <label for="courts">Anzahl Plätze</label>
       <input type="number" id="courts" value="2" min="1" />
+
+      <label style="display:flex;align-items:center;gap:8px;margin-top:14px">
+        <input type="checkbox" id="usePause" style="width:auto" />
+        <span style="margin:0">Zusätzliche Pause einplanen (z.B. Mittagspause)</span>
+      </label>
+      <div id="pauseBlock" style="display:none">
+        <div class="row">
+          <div>
+            <label for="pauseAfter">Pause nach wie vielen Minuten?</label>
+            <input type="number" id="pauseAfter" min="0" value="60" />
+          </div>
+          <div>
+            <label for="pauseDuration">Dauer der Pause (Min.)</label>
+            <input type="number" id="pauseDuration" min="1" value="15" />
+          </div>
+        </div>
+      </div>
+
       <div id="capacityHint"></div>
     </div>
 
     <div class="card" id="card-create" style="display:none">
+      <button type="button" class="btn btn-secondary" id="btnBackStep3" style="width:auto;padding:6px 12px;font-size:12.5px;margin-bottom:12px">← Zurück zu Zeit &amp; Plätze</button>
       <h2><span class="step">4</span>Turnier erstellen</h2>
       <p class="hint" id="createSummary"></p>
       <button class="btn btn-primary" id="btnCreate">Turnier erstellen &amp; Spielplan generieren</button>

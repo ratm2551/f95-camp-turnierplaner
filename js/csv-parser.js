@@ -40,15 +40,41 @@
     return { participants, hasTeamColumn: teamIdx !== -1, error: null };
   }
 
+  const FAMOUS_FOOTBALLERS = [
+    "Ronaldo", "Messi", "Neuer", "Kroos", "Müller", "Lewandowski", "Mbappé", "Modrić", "Kane", "Salah",
+    "Hazard", "De Bruyne", "Suárez", "Benzema", "Griezmann", "Van Dijk", "Kimmich", "Gündoğan", "Havertz",
+    "Musiala", "Wirtz", "Sané", "Alaba", "Rüdiger", "Gnabry", "Reus", "Klose", "Ballack", "Özil", "Podolski",
+    "Neymar", "Xavi", "Iniesta", "Zidane", "Beckham", "Ronaldinho", "Maradona", "Pelé", "Cruyff", "Kahn",
+    "Matthäus", "Schweinsteiger", "Klinsmann", "Boateng", "Draxler", "Werner", "Füllkrug", "Bellingham",
+  ];
+
+  function shuffledFootballerNames(count) {
+    const pool = [...FAMOUS_FOOTBALLERS];
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const names = [];
+    for (let i = 0; i < count; i++) {
+      const extra = Math.floor(i / pool.length);
+      names.push(pool[i % pool.length] + (extra > 0 ? " " + (extra + 1) : ""));
+    }
+    return names;
+  }
+
   // Baut Teams aus einer flachen Teilnehmerliste, wenn keine Team-Spalte vorhanden ist.
-  function autoBuildTeams(participants, teamSize) {
+  // nameStyle: "numeric" (Team 1, 2, ...) | "players" (nach berühmten Fußballern benannt)
+  function autoBuildTeams(participants, teamSize, nameStyle = "numeric") {
     const shuffled = [...participants];
+    const teamCount = Math.max(1, Math.ceil(shuffled.length / teamSize));
+    const footballerNames = nameStyle === "players" ? shuffledFootballerNames(teamCount) : null;
     const teams = [];
     for (let i = 0; i < shuffled.length; i += teamSize) {
       const members = shuffled.slice(i, i + teamSize);
+      const teamIdx = teams.length;
       teams.push({
-        id: "team_" + (teams.length + 1),
-        name: "Team " + (teams.length + 1),
+        id: "team_" + (teamIdx + 1),
+        name: footballerNames ? footballerNames[teamIdx] : "Team " + (teamIdx + 1),
         players: members.map((m) => m.name),
       });
     }
@@ -71,7 +97,14 @@
 
   // Baut Teams ohne Namensliste, nur aus (optional nach Altersgruppe) Spieleranzahlen.
   // entries: [{ label, count }] – label leer/"" bei nur einer Gruppe ohne Altersaufteilung.
-  function buildTeamsFromCounts(entries, teamSize) {
+  // nameStyle: "numeric" (Team 1, 2, ...) | "players" (nach berühmten Fußballern benannt)
+  function buildTeamsFromCounts(entries, teamSize, nameStyle = "numeric") {
+    const totalTeams = entries.reduce((sum, entry) => {
+      const count = Math.max(0, entry.count || 0);
+      return sum + (count > 0 ? Math.max(1, Math.ceil(count / teamSize)) : 0);
+    }, 0);
+    const footballerNames = nameStyle === "players" ? shuffledFootballerNames(totalTeams) : null;
+
     const teams = [];
     entries.forEach((entry) => {
       const count = Math.max(0, entry.count || 0);
@@ -83,9 +116,10 @@
         if (membersCount <= 0) continue;
         const prefix = entry.label ? entry.label + " " : "";
         const players = Array.from({ length: membersCount }, (_, j) => `${prefix}Spieler ${start + j + 1}`);
+        const teamLabel = footballerNames ? footballerNames[teams.length] : "Team " + (i + 1);
         teams.push({
           id: "team_" + (teams.length + 1),
-          name: (entries.length > 1 && entry.label ? entry.label + " – " : "") + "Team " + (i + 1),
+          name: (entries.length > 1 && entry.label ? entry.label + " – " : "") + teamLabel,
           players,
           ageGroup: entry.label || null,
         });
